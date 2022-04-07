@@ -44,3 +44,4 @@ VALUES
 (5, 6, 3, 5, 'messages');
 
 -- \i seeds/01_seeds.sql
+-- \i seeds/02_seeds.sql
