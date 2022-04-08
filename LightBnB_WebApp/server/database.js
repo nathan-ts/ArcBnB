@@ -167,31 +167,44 @@ const getAllProperties = function (options, limit = 10) {
 
 exports.getAllProperties = getAllProperties;
 
-
 /**
  * Add a property to the database
  * @param {{}} property An object containing all of the property details.
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function(property) {
-  // const propertyId = Object.keys(properties).length + 1;
-  // property.id = propertyId;
-  // properties[propertyId] = property;
-  // return Promise.resolve(property);
+  const queryParams = [
+    property.title, 
+    property.description, 
+    property.owner_id,
+    property.cover_photo_url, 
+    property.thumbnail_photo_url, 
+    property.cost_per_night, 
+    property.parking_spaces, 
+    property.number_of_bathrooms, 
+    property.number_of_bedrooms, 
+    true, 
+    property.province, 
+    property.city, 
+    property.country, 
+    property.street, 
+    property.post_code
+  ];
+  let queryString = `
+  INSERT INTO properties (
+  title, description, owner_id, cover_photo_url, thumbnail_photo_url, 
+  cost_per_night, parking_spaces, number_of_bathrooms, number_of_bedrooms, 
+  active, province, city, country, street, post_code) 
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+  RETURNING *;
+  `;
+
+  console.log("Query", queryString, "Params", queryParams)
   return pool
-    .query(`
-      SELECT reservations.*, properties.*, avg(rating) as average_rating
-      FROM reservations
-      JOIN properties ON reservations.property_id = properties.id
-      JOIN property_reviews ON properties.id = property_reviews.property_id
-      WHERE reservations.guest_id = $1
-      GROUP BY properties.id, reservations.id
-      ORDER BY reservations.start_date
-      LIMIT $2;
-    `, [guest_id, limit])
+    .query(queryString, queryParams)
     .then((result) => {
       console.log(result.rows);
-      return result.rows;
+      return result.rows[0];
     })
     .catch((err) => {
       console.log(err.message);
